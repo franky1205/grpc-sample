@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+option java_package = "com.ruckuswireless.scg.protobuf.grpc.exporter";
+option java_outer_classname = "ScgExporterApiService";
+
+service ExporterApiService {
+
+    rpc sendExportMessage(ExportMessageRequest) returns (ExportMessageResponse) {}
+
+    rpc sendStreamingExportMessage(stream ExportMessageRequest) returns (stream ExportMessageResponse) {}
+}
+
+message ExportMessageRequest {
+
+    bytes exportMessages = 1;
+}
+
+message ExportMessageResponse {
+
+    string errorMessage = 1;
+}

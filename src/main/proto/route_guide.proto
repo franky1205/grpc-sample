@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+option java_package = "org.franwork.studio.grpc.sample.routeguide";
+option java_outer_classname = "RouteGuideProto";
+
+service RouteGuide {
+
+    rpc GetFeature(Point) returns (Feature) {}
+
+    rpc ListFeatures(Rectangle) returns (stream Feature) {}
+
+    rpc UpdatePoints(stream Point) returns (Feature) {}
+
+    rpc GetFeaturesStreamingly(stream Point) returns (stream Feature) {}
+}
+
+message Rectangle {
+
+    Point point1 = 1;
+
+    Point point2 = 2;
+
+    Point point3 = 3;
+
+    Point point4 = 4;
+}
+
+// Points are represented as latitude-longitude pairs in the E7 representation
+// (degrees multiplied by 10**7 and rounded to the nearest integer).
+// Latitudes should be in the range +/- 90 degrees and longitude should be in
+// the range +/- 180 degrees (inclusive).
+message Point {
+    int32 latitude = 1;
+    int32 longitude = 2;
+}
+
+// A feature names something at a given point.
+//
+// If a feature could not be named, the name is empty.
+message Feature {
+    // The name of the feature.
+    string name = 1;
+    // The point where the feature is detected.
+    Point location = 2;
+}
