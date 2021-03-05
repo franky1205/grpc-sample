@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+option java_package = "org.franwork.studio.grpc.sample.chatroom";
+option java_outer_classname = "ChatRoomServiceProto";
+
+service ChatRoomService {
+
+    rpc brocast(stream ChatMessage) returns (stream ChatMessage) {}
+
+    rpc unicast(stream ChatMessage) returns (stream ChatMessage) {}
+}
+
+message ChatMessage {
+
+    string username = 1;
+
+    string destUsername = 2;
+
+    string message = 3;
+}

@@ -1,4 +1,4 @@
-package org.franwork.studio.grpc.sample.routeguide;
+package org.franwork.studio.grpc.sample;
 
 import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
@@ -11,11 +11,11 @@ import java.util.concurrent.TimeUnit;
  * @author Frankie Chao by 2021-02-19.
  */
 @Slf4j
-abstract class AbstractGrpcClient {
+public abstract class AbstractGrpcClient {
 
-    final ManagedChannel managedChannel;
+    protected final ManagedChannel managedChannel;
 
-    AbstractGrpcClient(String serverHost, int port) {
+    protected AbstractGrpcClient(String serverHost, int port) {
         this.managedChannel = ManagedChannelBuilder
                 .forAddress(serverHost, port)
                 .usePlaintext()
@@ -48,5 +48,5 @@ abstract class AbstractGrpcClient {
         }
     }
 
-    abstract void connectivityStateChanged(ConnectivityState connectivityState);
+    protected abstract void connectivityStateChanged(ConnectivityState connectivityState);
 }

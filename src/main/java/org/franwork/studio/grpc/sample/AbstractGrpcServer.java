@@ -1,4 +1,4 @@
-package org.franwork.studio.grpc.sample.routeguide;
+package org.franwork.studio.grpc.sample;
 
 import io.grpc.Server;
 import lombok.extern.slf4j.Slf4j;
@@ -10,11 +10,11 @@ import java.util.concurrent.TimeUnit;
  * @author Frankie Chao by 2020-06-03.
  */
 @Slf4j
-abstract class AbstractGrpcServer {
+public abstract class AbstractGrpcServer {
 
     private final Server server;
 
-    AbstractGrpcServer(@NotNull Server server) {
+    protected AbstractGrpcServer(@NotNull Server server) {
         this.server = server;
         this.addShutdownHook();
     }

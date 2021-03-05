@@ -3,6 +3,9 @@ package org.franwork.studio.grpc.sample.routeguide;
 import io.grpc.stub.StreamObserver;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -17,7 +20,7 @@ public class RouteGuideServiceImpl extends RouteGuideGrpc.RouteGuideImplBase {
     @Override
     public void getFeature(RouteGuideProto.Point request,
                            StreamObserver<RouteGuideProto.Feature> responseObserver) {
-        log.info("Get getFeature request with Point: [{}]", request);
+        log.info("Get getFeature request with Point: [{}]", request.getLatitude() + " " + request.getLongitude());
         responseObserver.onNext(this.findFeature(request));
         responseObserver.onCompleted();
     }
