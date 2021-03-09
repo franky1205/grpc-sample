@@ -5,16 +5,29 @@ option java_outer_classname = "ChatRoomServiceProto";
 
 service ChatRoomService {
 
-    rpc brocast(stream ChatMessage) returns (stream ChatMessage) {}
+    rpc broadcast(stream ClientChatMessage) returns (stream ServerChatMessage) {}
 
-    rpc unicast(stream ChatMessage) returns (stream ChatMessage) {}
+    rpc unicast(stream ClientChatMessage) returns (stream ServerChatMessage) {}
 }
 
-message ChatMessage {
+message ClientChatMessage {
 
-    string username = 1;
+    string dest = 1;
 
-    string destUsername = 2;
+    string message = 2;
+}
+
+message ServerChatMessage {
+
+    enum ChatMessageType {
+        BROCAST = 0;
+        UNICAST = 1;
+        ERROR = 2;
+    }
+
+    ChatMessageType messageType = 1;
+
+    string from = 2;
 
     string message = 3;
 }
