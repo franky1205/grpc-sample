@@ -3,6 +3,7 @@ package org.franwork.studio.grpc.sample.chatroom;
 import io.grpc.stub.StreamObserver;
 import lombok.extern.slf4j.Slf4j;
 import org.franwork.studio.grpc.sample.GrpcConstant;
+import org.franwork.studio.grpc.sample.chatroom.ChatRoomServiceProto.ServerChatMessage;
 
 import java.util.Map;
 import java.util.Optional;
@@ -16,20 +17,20 @@ import java.util.concurrent.CopyOnWriteArraySet;
 @Slf4j
 public class ChatRoomServerService extends ChatRoomServiceGrpc.ChatRoomServiceImplBase {
 
-    private Set<StreamObserver<ChatRoomServiceProto.ServerChatMessage>> broadcastObservers = new CopyOnWriteArraySet<>();
+    private Set<StreamObserver<ServerChatMessage>> broadcastObservers = new CopyOnWriteArraySet<>();
 
-    private Map<String, StreamObserver<ChatRoomServiceProto.ServerChatMessage>> unicastObservers = new ConcurrentHashMap<>();
+    private Map<String, StreamObserver<ServerChatMessage>> unicastObservers = new ConcurrentHashMap<>();
 
     @Override
-    public StreamObserver<ChatRoomServiceProto.ClientChatMessage> broadcast(StreamObserver<ChatRoomServiceProto.ServerChatMessage> responseObserver) {
+    public StreamObserver<ChatRoomServiceProto.ClientChatMessage> broadcast(StreamObserver<ServerChatMessage> responseObserver) {
         this.broadcastObservers.add(responseObserver);
 
         return new StreamObserver<ChatRoomServiceProto.ClientChatMessage>() {
             @Override
             public void onNext(ChatRoomServiceProto.ClientChatMessage value) {
                 log.info("Get broadcast client chat message from: [{}]", GrpcConstant.USERNAME_CONTEXT_KEY.get());
-                broadcastObservers.forEach(broadcastObserver -> broadcastObserver.onNext(ChatRoomServiceProto.ServerChatMessage.newBuilder()
-                                .setMessageType(ChatRoomServiceProto.ServerChatMessage.ChatMessageType.BROCAST)
+                broadcastObservers.forEach(broadcastObserver -> broadcastObserver.onNext(ServerChatMessage.newBuilder()
+                                .setMessageType(ServerChatMessage.ChatMessageType.BROCAST)
                                 .setFrom(GrpcConstant.USERNAME_CONTEXT_KEY.get())
                                 .setMessage(value.getMessage())
                                 .build()));
@@ -51,7 +52,7 @@ public class ChatRoomServerService extends ChatRoomServiceGrpc.ChatRoomServiceIm
     }
 
     @Override
-    public StreamObserver<ChatRoomServiceProto.ClientChatMessage> unicast(StreamObserver<ChatRoomServiceProto.ServerChatMessage> responseObserver) {
+    public StreamObserver<ChatRoomServiceProto.ClientChatMessage> unicast(StreamObserver<ServerChatMessage> responseObserver) {
         String username = GrpcConstant.USERNAME_CONTEXT_KEY.get();
         this.unicastObservers.put(username, responseObserver);
         return new StreamObserver<ChatRoomServiceProto.ClientChatMessage>() {
@@ -59,20 +60,27 @@ public class ChatRoomServerService extends ChatRoomServiceGrpc.ChatRoomServiceIm
             public void onNext(ChatRoomServiceProto.ClientChatMessage value) {
                 log.info("Get unicast client chat message from: [{}]", GrpcConstant.USERNAME_CONTEXT_KEY.get());
                 if (!unicastObservers.containsKey(value.getDest())) {
-                    responseObserver.onNext(ChatRoomServiceProto.ServerChatMessage.newBuilder()
-                            .setMessageType(ChatRoomServiceProto.ServerChatMessage.ChatMessageType.ERROR)
+                    responseObserver.onNext(ServerChatMessage.newBuilder()
+                            .setMessageType(ServerChatMessage.ChatMessageType.ERROR)
                             .setFrom("Chat Room Server")
                             .setMessage("Cannot find the login user with name: [" + value.getDest() + "]")
                             .build());
                     return;
                 }
 
+                ServerChatMessage serverChatMessage = this.getUnicastServerChatMessage(value.getMessage());
+
+                responseObserver.onNext(serverChatMessage);
                 Optional.ofNullable(unicastObservers.get(value.getDest()))
-                        .ifPresent(unicastObserver -> unicastObserver.onNext(ChatRoomServiceProto.ServerChatMessage.newBuilder()
-                                .setMessageType(ChatRoomServiceProto.ServerChatMessage.ChatMessageType.UNICAST)
-                                .setFrom(GrpcConstant.USERNAME_CONTEXT_KEY.get())
-                                .setMessage(value.getMessage())
-                                .build()));
+                        .ifPresent(unicastObserver -> unicastObserver.onNext(serverChatMessage));
+            }
+
+            private ServerChatMessage getUnicastServerChatMessage(String message) {
+                return ServerChatMessage.newBuilder()
+                        .setMessageType(ServerChatMessage.ChatMessageType.UNICAST)
+                        .setFrom(GrpcConstant.USERNAME_CONTEXT_KEY.get())
+                        .setMessage(message)
+                        .build();
             }
 
             @Override

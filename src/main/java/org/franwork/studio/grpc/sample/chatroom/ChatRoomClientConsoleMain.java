@@ -1,6 +1,5 @@
 package org.franwork.studio.grpc.sample.chatroom;
 
-import com.google.protobuf.Descriptors;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Scanner;
@@ -9,7 +8,7 @@ import java.util.Scanner;
  * @author Frankie Chao by 2021-03-05.
  */
 @Slf4j
-public class ChatRoomConsoleMain {
+public class ChatRoomClientConsoleMain {
 
     public static void main(String[] args) {
         ChatRoomClient chatRoomClient = new ChatRoomClient("localhost", 8686, args[0], serverChatMessage -> {
